@@ -1,0 +1,111 @@
+############################################
+# PYTHON GENEL
+############################################
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+develop-eggs/
+eggs/
+wheels/
+pip-wheel-metadata/
+
+############################################
+# VIRTUAL ENV / ORTAM
+############################################
+env/
+venv/
+.venv/
+ENV/
+.env
+.env.*
+!.env.example
+
+############################################
+# JUPYTER / NOTEBOOK
+############################################
+.ipynb_checkpoints/
+notebooks/.ipynb_checkpoints/
+
+############################################
+# IDE VE EDITÖR DOSYALARI
+############################################
+.vscode/
+.idea/
+*.swp
+*.swo
+*.bak
+*.tmp
+.DS_Store
+
+############################################
+# LOG VE CACHE DOSYALARI
+############################################
+*.log
+logs/
+.cache/
+tmp/
+
+############################################
+# MODEL / EMBEDDING / RAG ARTEFAKTLARI
+############################################
+# Büyük dosyalar ve indeksler
+data/
+embeddings/
+vector_db/
+faiss_index/
+chroma_db/
+*.bin
+*.pt
+*.pth
+*.onnx
+
+############################################
+# VERİ DOSYALARI (OPSİYONEL)
+############################################
+*.csv
+*.json
+*.parquet
+*.sqlite
+*.db
+
+# Eğer veri takip edilecekse, yukarıdakileri yorum satırı yapın.
+
+############################################
+# CONFIG VE SECRET DOSYALAR
+############################################
+config.yaml
+config.local.yaml
+secrets.yaml
+*.key
+*.pem
+
+############################################
+# TEST & COVERAGE
+############################################
+.coverage
+htmlcov/
+.pytest_cache/
+.tox/
+
+############################################
+# OS ÖZEL
+############################################
+Thumbs.db
+ehthumbs.db
+
+############################################
+# DOCKER
+############################################
+.dockerignore
+
+############################################
+# GIT ÖZEL
+############################################
+*.orig
+*.rej
