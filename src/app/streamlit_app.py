@@ -34,7 +34,7 @@ def init_session_state():
 # -------------------------------------------------------------------
 def main():
     st.set_page_config(
-        page_title="BUÜ LLM RAG – Mevzuat Asistanı",
+        page_title="BUÜ LLM RAG – Mevzuat Soru-Cevap Asistanı",
         page_icon="⚖️",
         layout="wide",
     )
@@ -51,7 +51,9 @@ Bu arayüz, **2547 sayılı Yükseköğretim Kanunu** ve
 üzerinde çalışan RAG tabanlı bir asistandır.
 """
     )
-    show_debug = st.sidebar.checkbox("Teknik detayları göster (retrieval sonuçları)", value=False)
+    show_debug = st.sidebar.checkbox(
+        "Teknik detayları göster (retrieval sonuçları)", value=False
+    )
 
     st.title("BUÜ LLM RAG – Mevzuat Soru-Cevap Asistanı")
     st.markdown(
@@ -61,7 +63,7 @@ Cevaplar, yalnızca sisteme yüklenen **kanun ve yönetmelik maddelerine** dayan
 """
     )
 
-    # Daha önceki mesajları göster (chat arayüzü)
+    # Geçmiş mesajları göster (chat arayüzü)
     for msg in st.session_state["messages"]:
         with st.chat_message(msg["role"]):
             st.markdown(msg["content"])
@@ -70,31 +72,40 @@ Cevaplar, yalnızca sisteme yüklenen **kanun ve yönetmelik maddelerine** dayan
     user_input = st.chat_input("Sorunuzu yazın ve Enter'a basın...")
 
     if user_input:
-        # Kullanıcı mesajını ekrana yaz
+        # 1) Kullanıcı mesajını state'e ekle ve ekrana yaz
         st.session_state["messages"].append(
             {"role": "user", "content": user_input}
         )
         with st.chat_message("user"):
             st.markdown(user_input)
 
-        # Asistan cevabı
+        # 2) Asistan cevabını STREAMING olarak üret
         with st.chat_message("assistant"):
             with st.spinner("Yanıt hazırlanıyor..."):
-                answer_text = rag.answer(user_input)
-                st.markdown(answer_text)
+                stream = rag.answer_stream(
+                    user_input,
+                    chat_history=st.session_state["messages"],
+                )
 
+                answer_placeholder = st.empty()
+                full_answer = ""
+
+                for chunk in stream:
+                    full_answer += chunk
+                    # Her yeni parçayı ekranda güncelle
+                    answer_placeholder.markdown(full_answer)
+
+        # 3) Streaming bittikten sonra cevabı state'e ekle
         st.session_state["messages"].append(
-            {"role": "assistant", "content": answer_text}
+            {"role": "assistant", "content": full_answer}
         )
 
-        # Opsiyonel: debug için retrieval sonuçlarını göster
+        # Opsiyonel: debug panel (şimdilik sadece bilgi notu)
         if show_debug:
-            # query_rewriter + retrieve akışını yeniden çalıştırmak yerine
-            # sadece son cevabı gösteriyoruz; istersen buraya daha detaylı
-            # debug bilgileri ekleyebiliriz.
             st.sidebar.markdown("---")
-            st.sidebar.markdown("🔍 **Debug modu şu an sadece cevap metnini gösteriyor.**")
-
+            st.sidebar.markdown(
+                "🔍 **Debug modu: Şu an sadece cevap metnini gösteriyor.**"
+            )
 
 
 if __name__ == "__main__":
