@@ -84,7 +84,7 @@ Ek kurallar:
 - "YANIT:" ve "KAYNAKLAR:" başlıklarını sadece birer kez kullan.
 - KAYNAKLAR kısmında sadece yukarıda listelenen doküman adlarını ve ilgili madde numaralarını yaz.
 - Yeni kanun isimleri uydurma; sadece bağlamda geçen doc_name bilgilerini kullan.
-- Eğer verilen metinler soruyu doğrudan karşılamıyorsa, YANIT kısmında
+- Eğer verilen metinler soruyu  karşılamıyorsa, YANIT kısmında
   "Soruyla ilgili mevzuatta açık bir hüküm bulunmamaktadır." de
   ve KAYNAKLAR kısmına en ilgili gördüğün 1-2 maddeyi yaz.
 """
