@@ -1,5 +1,3 @@
-# src/app/streamlit_app.py
-
 from __future__ import annotations
 
 import sys
@@ -14,27 +12,20 @@ import streamlit as st
 from src.rag.pipeline import RAGPipeline
 
 
-# -------------------------------------------------------------------
-# Uygulama başlatılırken RAG pipeline'ı tek kez yükle (session_state)
-# -------------------------------------------------------------------
 def get_pipeline() -> RAGPipeline:
     if "rag_pipeline" not in st.session_state:
         st.session_state["rag_pipeline"] = RAGPipeline()
     return st.session_state["rag_pipeline"]
 
 
-def init_session_state():
+def init_session_state() -> None:
     if "messages" not in st.session_state:
-        # chat geçmişini tutalım: {"role": "user"/"assistant", "content": "..."}
         st.session_state["messages"] = []
 
 
-# -------------------------------------------------------------------
-# Streamlit UI
-# -------------------------------------------------------------------
-def main():
+def main() -> None:
     st.set_page_config(
-        page_title="BUÜ LLM RAG – Mevzuat Soru-Cevap Asistanı",
+        page_title="BUU LLM RAG - Mevzuat Soru-Cevap Asistani",
         page_icon="⚖️",
         layout="wide",
     )
@@ -42,46 +33,40 @@ def main():
     init_session_state()
     rag = get_pipeline()
 
-    # Sidebar
-    st.sidebar.title("⚙️ Ayarlar")
+    st.sidebar.title("Ayarlar")
     st.sidebar.markdown(
         """
-Bu arayüz, **2547 sayılı Yükseköğretim Kanunu** ve  
-**BUÜ Lisansüstü Eğitim-Öğretim Yönetmeliği**  
-üzerinde çalışan RAG tabanlı bir asistandır.
+Bu arayuz, **2547 sayili Yuksekogretim Kanunu** ve
+**BUU Lisansustu Egitim-Ogretim Yonetmeligi**
+uzerinde calisan RAG tabanli bir asistandir.
 """
     )
     show_debug = st.sidebar.checkbox(
-        "Teknik detayları göster (retrieval sonuçları)", value=False
+        "Teknik detaylari goster (retrieval sonuclari)",
+        value=False,
     )
 
-    st.title("BUÜ LLM RAG – Mevzuat Soru-Cevap Asistanı")
+    st.title("BUU LLM RAG - Mevzuat Soru-Cevap Asistani")
     st.markdown(
         """
-Doğal dilde soru sorarak, üniversite mevzuatıyla ilgili yanıtlar alabilirsiniz.  
-Cevaplar, yalnızca sisteme yüklenen **kanun ve yönetmelik maddelerine** dayanır.
+Dogal dilde soru sorarak universite mevzuatiyla ilgili yanitlar alabilirsiniz.
+Cevaplar, yalnizca sisteme yuklenen **kanun ve yonetmelik maddelerine** dayanir.
 """
     )
 
-    # Geçmiş mesajları göster (chat arayüzü)
     for msg in st.session_state["messages"]:
         with st.chat_message(msg["role"]):
             st.markdown(msg["content"])
 
-    # Kullanıcıdan yeni soru
-    user_input = st.chat_input("Sorunuzu yazın ve Enter'a basın...")
+    user_input = st.chat_input("Sorunuzu yazin ve Enter'a basin...")
 
     if user_input:
-        # 1) Kullanıcı mesajını state'e ekle ve ekrana yaz
-        st.session_state["messages"].append(
-            {"role": "user", "content": user_input}
-        )
+        st.session_state["messages"].append({"role": "user", "content": user_input})
         with st.chat_message("user"):
             st.markdown(user_input)
 
-        # 2) Asistan cevabını STREAMING olarak üret
         with st.chat_message("assistant"):
-            with st.spinner("Yanıt hazırlanıyor..."):
+            with st.spinner("Yanit hazirlaniyor..."):
                 stream = rag.answer_stream(
                     user_input,
                     chat_history=st.session_state["messages"],
@@ -92,20 +77,13 @@ Cevaplar, yalnızca sisteme yüklenen **kanun ve yönetmelik maddelerine** dayan
 
                 for chunk in stream:
                     full_answer += chunk
-                    # Her yeni parçayı ekranda güncelle
                     answer_placeholder.markdown(full_answer)
 
-        # 3) Streaming bittikten sonra cevabı state'e ekle
-        st.session_state["messages"].append(
-            {"role": "assistant", "content": full_answer}
-        )
+        st.session_state["messages"].append({"role": "assistant", "content": full_answer})
 
-        # Opsiyonel: debug panel (şimdilik sadece bilgi notu)
         if show_debug:
             st.sidebar.markdown("---")
-            st.sidebar.markdown(
-                "🔍 **Debug modu: Şu an sadece cevap metnini gösteriyor.**"
-            )
+            st.sidebar.markdown("**Debug modu: su an sadece cevap metnini gosteriyor.**")
 
 
 if __name__ == "__main__":

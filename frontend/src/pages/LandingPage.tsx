@@ -6,22 +6,21 @@ import "@/styles/landing.css";
 
 const cards = [
   {
-    title: "BUÜ Lisansüstü Eğitim Yönetmeliği neleri düzenler?",
-    emoji: "📘",
-    body: "Yüksek lisans ve doktora programlarının kapsamını, sürelerini, ders ve sınav esaslarını açıklar.",
+    title: "BUU Lisansustu Egitim Yonetmeligi neleri duzenler?",
+    emoji: "Kitap",
+    body: "Yuksek lisans ve doktora programlarinin kapsamini, surelerini, ders ve sinav esaslarini aciklar.",
   },
   {
-    title: "2547 Sayılı Yükseköğretim Kanunu hangi konuları kapsar?",
-    emoji: "⚖️",
-    body: "Yükseköğretim kurumlarının yapısını, görevlerini ve eğitim esaslarını resmi maddelere dayalı açıklar.",
+    title: "2547 Sayili Yuksekogretim Kanunu hangi konulari kapsar?",
+    emoji: "Hukuk",
+    body: "Yuksekogretim kurumlarinin yapisini, gorevlerini ve egitim esaslarini resmi maddelere dayali aciklar.",
   },
   {
-    title: "Sınav sonuçlarına nasıl itiraz edilir?",
-    emoji: "⏱️",
-    body: "Not itirazı ve değerlendirme süreçlerini ilgili yönetmelik maddelerine göre açıklar.",
+    title: "Sinav sonuclarina nasil itiraz edilir?",
+    emoji: "Surec",
+    body: "Not itirazi ve degerlendirme sureclerini ilgili yonetmelik maddelerine gore aciklar.",
   },
 ];
-
 
 export default function LandingPage() {
   const navigate = useNavigate();
@@ -45,15 +44,15 @@ export default function LandingPage() {
         <BrandHeader />
 
         <section className="landing-hero">
-          <p className="landing-eyebrow">Mevzuat Soru-Cevap Asistanı</p>
-          <h1>Hoş geldiniz</h1>
+          <p className="landing-eyebrow">Mevzuat Soru-Cevap Asistani</p>
+          <h1>Hos geldiniz</h1>
           <p className="landing-subtitle">
-            Üniversite mevzuatı ve yönetmelikler hakkında merak ettiğiniz her şeyi sorabilirsiniz. Resmi
-            maddeleri kaynak göstererek açıklar.
+            Universite mevzuati ve yonetmelikler hakkinda merak ettiginiz her seyi sorabilirsiniz. Resmi
+            maddeleri kaynak gostererek aciklar.
           </p>
           <div className="landing-pill-row">
-            <span className="landing-pill">2547 Sayılı Kanun</span>
-            <span className="landing-pill">BUÜ Lisansüstü Yönetmeliği</span>
+            <span className="landing-pill">2547 Sayili Kanun</span>
+            <span className="landing-pill">BUU Lisansustu Yonetmeligi</span>
           </div>
         </section>
 
@@ -76,7 +75,7 @@ export default function LandingPage() {
 
         <form className="landing-form" onSubmit={handleSubmit}>
           <label htmlFor="question" className="sr-only">
-            Sorunuzu buraya yazın
+            Sorunuzu buraya yazin
           </label>
           <div className="landing-input">
             <input
@@ -84,13 +83,13 @@ export default function LandingPage() {
               type="text"
               value={question}
               onChange={(event) => setQuestion(event.target.value)}
-              placeholder="Sorunuzu yazın..."
+              placeholder="Sorunuzu yazin..."
             />
-            <button type="submit" aria-label="Soruyu gönder">
-              ➜
+            <button type="submit" aria-label="Soruyu gonder">
+              Gonder
             </button>
           </div>
-          <p className="landing-hint">Cevaplar yalnızca sisteme yüklenen mevzuat metinlerine dayanır.</p>
+          <p className="landing-hint">Cevaplar yalnizca sisteme yuklenen mevzuat metinlerine dayanir.</p>
         </form>
       </div>
     </div>

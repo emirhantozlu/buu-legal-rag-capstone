@@ -14,9 +14,9 @@ interface LocationState {
 }
 
 const quickPrompts = [
-  "Lisansüstü programlara başvuru şartları nelerdir?",
-  "Ders muafiyetini hangi koşullarda talep edebilirim?",
-  "2547 sayılı kanuna göre tez savunması süresi nedir?",
+  "Lisansustu programlara basvuru sartlari nelerdir?",
+  "Ders muafiyetini hangi kosullarda talep edebilirim?",
+  "2547 sayili kanuna gore tez savunmasi suresi nedir?",
 ];
 
 export default function ChatPage() {
@@ -73,8 +73,8 @@ export default function ChatPage() {
         role: "assistant",
         content:
           error instanceof Error
-            ? `Yanıt alınamadı: ${error.message}`
-            : "Yanıt alınamadı. Lütfen tekrar deneyin.",
+            ? `Yanit alinamadi: ${error.message}`
+            : "Yanit alinamadi. Lutfen tekrar deneyin.",
       };
       setMessages((prev) => [...prev, assistantMessage]);
     } finally {
@@ -101,21 +101,21 @@ export default function ChatPage() {
           <BrandHeader compact />
           <div className="chat-meta">
             <span className="status-dot" aria-hidden />
-            <span className="status-text">API bağlantısı aktif</span>
+            <span className="status-text">API baglantisi aktif</span>
           </div>
           <button
             type="button"
             className="panel-toggle"
             onClick={() => setShowRetrieval((prev) => !prev)}
           >
-            {showRetrieval ? "Kaynak panelini gizle" : "Kaynak panelini aç"}
+            {showRetrieval ? "Kaynak panelini gizle" : "Kaynak panelini ac"}
           </button>
         </div>
 
         <div ref={feedRef} className="chat-feed">
           {messages.length === 0 && !isLoading && (
             <div className="chat-empty">
-              <p>Hazırsanız sorunuzu yazın ya da aşağıdaki örneklerden birini seçin.</p>
+              <p>Hazirsaniz sorunuzu yazin ya da asagidaki orneklerden birini secin.</p>
               <div className="quick-prompts">
                 {quickPrompts.map((prompt) => (
                   <button key={prompt} type="button" onClick={() => void handleSend(prompt)}>
@@ -128,19 +128,19 @@ export default function ChatPage() {
           {messages.map((message, index) => (
             <ChatBubble key={index} role={message.role} content={message.content} sources={message.sources} />
           ))}
-          {isLoading && <ChatBubble role="assistant" content="Yanıt hazırlanıyor..." />}
+          {isLoading && <ChatBubble role="assistant" content="Yanit hazirlaniyor..." />}
         </div>
 
         <form className="chat-input" onSubmit={handleSubmit}>
           <textarea
             value={input}
-            placeholder="Sorunuzu yazın..."
+            placeholder="Sorunuzu yazin..."
             onChange={(event) => setInput(event.target.value)}
             onKeyDown={handleKeyDown}
             rows={2}
           />
-          <button type="submit" disabled={isLoading || !input.trim()} aria-label="Soruyu gönder">
-            ➜
+          <button type="submit" disabled={isLoading || !input.trim()} aria-label="Soruyu gonder">
+            Gonder
           </button>
         </form>
       </section>

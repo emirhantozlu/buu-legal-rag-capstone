@@ -17,7 +17,7 @@ export default function BrandHeader({ compact = false }: BrandHeaderProps) {
         textAlign: "center",
       }}
     >
-      <img src={buuLogo} alt="BUÜ" width={compact ? 36 : 56} height={compact ? 36 : 56} />
+      <img src={buuLogo} alt="BUU" width={compact ? 36 : 56} height={compact ? 36 : 56} />
       <p
         style={{
           fontSize: compact ? "1rem" : "1.2rem",
@@ -26,9 +26,9 @@ export default function BrandHeader({ compact = false }: BrandHeaderProps) {
           letterSpacing: 0.02,
         }}
       >
-        Bursa Uludağ Üniversitesi
+        Bursa Uludag Universitesi
       </p>
-      <img src={instituteLogo} alt="Enstitü" width={compact ? 36 : 56} height={compact ? 36 : 56} />
+      <img src={instituteLogo} alt="Enstitu" width={compact ? 36 : 56} height={compact ? 36 : 56} />
     </div>
   );
 }

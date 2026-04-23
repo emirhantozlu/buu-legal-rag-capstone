@@ -18,11 +18,11 @@ export function RetrievalPanel({ chunks, onClose }: RetrievalPanelProps) {
     <aside className="retrieval-panel">
       <header>
         <div>
-          <p className="retrieval-label">Kaynak öngörüleri</p>
+          <p className="retrieval-label">Kaynak ongoruleri</p>
           <h4>En ilgili maddeler</h4>
         </div>
         <div className="retrieval-actions">
-          <span className="retrieval-count">{chunks.length ? `${chunks.length} kayıt` : "–"}</span>
+          <span className="retrieval-count">{chunks.length ? `${chunks.length} kayit` : "-"}</span>
           {onClose && (
             <button type="button" className="retrieval-close" onClick={onClose}>
               Kapat
@@ -32,7 +32,7 @@ export function RetrievalPanel({ chunks, onClose }: RetrievalPanelProps) {
       </header>
 
       {!chunks.length ? (
-        <p className="retrieval-empty">Henüz kaynak bilgisi yok. Bir soru sorun.</p>
+        <p className="retrieval-empty">Henuz kaynak bilgisi yok. Bir soru sorun.</p>
       ) : (
         <div className="retrieval-chunks">
           {chunks.map((chunk, index) => {
@@ -43,10 +43,10 @@ export function RetrievalPanel({ chunks, onClose }: RetrievalPanelProps) {
 
             return (
               <article key={chunkKey} className="chunk-card" data-expanded={isExpanded}>
-              <p className="chunk-title">
-                {chunk.doc_name} {chunk.article_no ? `– ${chunk.article_no}` : ""}
-              </p>
-              {chunk.heading && <p className="chunk-heading">{chunk.heading}</p>}
+                <p className="chunk-title">
+                  {chunk.doc_name} {chunk.article_no ? ` - ${chunk.article_no}` : ""}
+                </p>
+                {chunk.heading && <p className="chunk-heading">{chunk.heading}</p>}
                 {snippet && (
                   <>
                     <p className={`chunk-text${isExpanded ? " expanded" : ""}`}>{isExpanded ? snippet : truncated}</p>
@@ -60,7 +60,7 @@ export function RetrievalPanel({ chunks, onClose }: RetrievalPanelProps) {
                     </button>
                   </>
                 )}
-              <span className="chunk-score">Skor: {chunk.score.toFixed(2)}</span>
+                <span className="chunk-score">Skor: {chunk.score.toFixed(2)}</span>
               </article>
             );
           })}

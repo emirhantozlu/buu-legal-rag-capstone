@@ -51,7 +51,7 @@ export function ChatBubble({ role, content, sources }: ChatBubbleProps) {
                   border: "1px solid rgba(12, 38, 89, 0.08)",
                 }}
               >
-                {source.doc_name || "Kaynak"} {source.article_no ? `– ${source.article_no}` : ""}
+                {source.doc_name || "Kaynak"} {source.article_no ? ` - ${source.article_no}` : ""}
               </span>
             ))}
           </div>
