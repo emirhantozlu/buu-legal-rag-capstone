@@ -1,41 +1,76 @@
-# src/rag/answer_generator.py
-
 from __future__ import annotations
 
-from typing import List, Dict, Any
+from typing import Any, Dict, List
+
 from openai import OpenAI
 
-from src.config import OPENAI_MODEL_NAME
+from src.config import OPENAI_API_KEY, OPENAI_MODEL_NAME
 
-client = OpenAI()
+client = OpenAI(api_key=OPENAI_API_KEY) if OPENAI_API_KEY else None
 
-# Sistem seviyesinde daha katı bir rol tanımı
 SYSTEM_MESSAGE = """
-Sen bir RAG tabanlı üniversite mevzuatı asistanısın.
+Sen bir RAG tabanli universite mevzuati asistansin.
 
-Yalnızca şu iki kaynağa dayanarak yanıt vereceksin:
-1) 2547 Sayılı Yükseköğretim Kanunu
-2) Bursa Uludağ Üniversitesi Lisansüstü Eğitim-Öğretim Yönetmeliği
+Yalnizca su iki kaynaga dayanarak yanit vereceksin:
+1) 2547 Sayili Yuksekogretim Kanunu
+2) Bursa Uludag Universitesi Lisansustu Egitim-Ogretim Yonetmeligi
 
 Kurallar:
-- Yanıtını sadece sana verilen mevzuat metinlerine dayanarak üret.
-- Türkiye'deki başka hiçbir kanun, yönetmelik veya mevzuat ismini ANMA (Vergi Usul Kanunu, TCK, vb. kesinlikle geçmeyecek).
-- Bağlamda yer almayan hüküm veya bilgiyi uydurma.
-- Emin olmadığın konularda tahmin yürütme; bunun yerine mevzuatta açık hüküm olmadığını söyle.
-- Metinlerdeki ifadeleri mümkün oldukça özetleyerek, anlaşılır ve akademik bir Türkçe ile açıkla.
-- Aşağıda belirtilen çıktı formatına KESİNLİKLE UY.
+- Yanitini sadece sana verilen mevzuat metinlerine dayanarak uret.
+- Baglamda yer almayan hukum veya bilgiyi uydurma.
+- Emin olmadigin konularda tahmin yurutme; bunun yerine mevzuatta acik hukum olmadigini soyle.
+- Metinlerdeki ifadeleri ozetleyerek, anlasilir ve akademik bir Turkce ile acikla.
+- Asagidaki cikti formatina kesinlikle uy.
 """
+
+
+def _build_sources_list(retrieved_chunks: List[Dict[str, Any]]) -> str:
+    seen = set()
+    lines: List[str] = []
+
+    for item in retrieved_chunks:
+        metadata = item.get("metadata", {}) or {}
+        doc_name = metadata.get("doc_name") or "Bilinmeyen dokuman"
+        article_no = metadata.get("article_no") or "Madde belirtilmedi"
+        label = f"- {doc_name} - {article_no}"
+        if label in seen:
+            continue
+        seen.add(label)
+        lines.append(label)
+
+    return "\n".join(lines) if lines else "- Kaynak bulunamadi"
+
+
+def _build_local_fallback_answer(retrieved_chunks: List[Dict[str, Any]]) -> str:
+    if not retrieved_chunks:
+        return (
+            "YANIT:\n"
+            "OpenAI API anahtari tanimli olmadigi icin dil modeli cevabi uretilemiyor.\n\n"
+            "KAYNAKLAR:\n"
+            "- Kaynak bulunamadi"
+        )
+
+    primary_text = (retrieved_chunks[0].get("metadata", {}) or {}).get("text", "").strip()
+    if len(primary_text) > 900:
+        primary_text = primary_text[:900].rsplit(" ", 1)[0].rstrip() + "..."
+
+    excerpt = primary_text or "Ilgili metin parcasi bos geldi."
+    sources_text = _build_sources_list(retrieved_chunks)
+
+    return (
+        "YANIT:\n"
+        "OpenAI API anahtari tanimli olmadigi icin cevap yerel ozet modunda gosteriliyor. "
+        "En ilgili mevzuat parcasi asagidadir:\n"
+        f"{excerpt}\n\n"
+        "KAYNAKLAR:\n"
+        f"{sources_text}"
+    )
 
 
 def _build_prompt(
     question: str,
     retrieved_chunks: List[Dict[str, Any]],
 ) -> str:
-    """
-    Hem normal hem de streaming cevap için ortak prompt'u hazırlar.
-    Burada sadece soru + ilgili maddeler + çok net format talimatı var.
-    """
-
     context_parts = []
     doc_names = set()
 
@@ -49,57 +84,42 @@ def _build_prompt(
             doc_names.add(doc_name)
 
         context_parts.append(
-            f"[{idx}] Kaynak: {doc_name} – {article_no}\n"
+            f"[{idx}] Kaynak: {doc_name} - {article_no}\n"
             f"{chunk_text}\n"
         )
 
     context = "\n".join(context_parts)
     doc_name_list = ", ".join(sorted(doc_names))
 
-    prompt = f"""
-Aşağıda üniversite mevzuatından alınmış ilgili maddeler bulunmaktadır.
+    return f"""
+Asagida universite mevzuatindan alinmis ilgili maddeler bulunmaktadir.
 
-Kullanılabilecek doküman adları YALNIZCA şunlardır:
+Kullanilabilecek dokuman adlari yalnizca sunlardir:
 {doc_name_list}
 
-Bu listenin DIŞINDA hiçbir kanun veya yönetmelik adı kullanma.
-
-İLGİLİ MEVZUAT METİNLERİ:
+Ilgili mevzuat metinleri:
 {context}
 
-Kullanıcı sorusu:
+Kullanici sorusu:
 "{question}"
 
-Şimdi aşağıdaki formatta yanıt üret (biçimi birebir koru):
+Simdi asagidaki formatta yanit uret:
 
 YANIT:
-(buraya sorunun cevabını, sadece yukarıdaki metinlere dayanarak,
-özetleyici ve açıklayıcı bir şekilde yaz. Metni kopyalama, özetle.)
+(Buraya sorunun cevabini sadece yukaridaki metinlere dayanarak, ozetleyici ve aciklayici bir sekilde yaz.)
 
 KAYNAKLAR:
-- Doküman adı – Madde N
-- Doküman adı – Madde N
-
-Ek kurallar:
-- "YANIT:" ve "KAYNAKLAR:" başlıklarını sadece birer kez kullan.
-- KAYNAKLAR kısmında sadece yukarıda listelenen doküman adlarını ve ilgili madde numaralarını yaz.
-- Yeni kanun isimleri uydurma; sadece bağlamda geçen doc_name bilgilerini kullan.
-- Eğer verilen metinler soruyu  karşılamıyorsa, YANIT kısmında
-  "Soruyla ilgili mevzuatta açık bir hüküm bulunmamaktadır." de
-  ve KAYNAKLAR kısmına en ilgili gördüğün 1-2 maddeyi yaz.
+- Dokuman adi - Madde N
+- Dokuman adi - Madde N
 """
-
-    return prompt
 
 
 def generate_answer(
     question: str,
     retrieved_chunks: List[Dict[str, Any]],
 ) -> str:
-    """
-    LLM'e kullanıcı sorusunu + chunk metinlerini vererek
-    hukuki ve akademik formatta yanıt üretir (non-streaming).
-    """
+    if not OPENAI_API_KEY or client is None:
+        return _build_local_fallback_answer(retrieved_chunks)
 
     prompt = _build_prompt(question, retrieved_chunks)
 
@@ -112,20 +132,19 @@ def generate_answer(
             },
             {"role": "user", "content": prompt},
         ],
-        temperature=0.0,  # halüsinasyonu azaltmak için deterministik cevap
+        temperature=0.0,
     )
 
-    return response.choices[0].message.content
+    return response.choices[0].message.content or _build_local_fallback_answer(retrieved_chunks)
 
 
 def generate_answer_stream(
     question: str,
     retrieved_chunks: List[Dict[str, Any]],
 ):
-    """
-    Aynı cevabı bu sefer streaming olarak üretir.
-    Streamlit arayüzü, bu fonksiyondan gelen parçaları sırayla yazacaktır.
-    """
+    if not OPENAI_API_KEY or client is None:
+        yield _build_local_fallback_answer(retrieved_chunks)
+        return
 
     prompt = _build_prompt(question, retrieved_chunks)
 

@@ -50,6 +50,7 @@ notebooks/.ipynb_checkpoints/
 logs/
 .cache/
 tmp/
+*.tsbuildinfo
 
 ############################################
 # MODEL / EMBEDDING / RAG ARTEFAKTLARI
@@ -109,3 +110,10 @@ ehthumbs.db
 ############################################
 *.orig
 *.rej
+
+############################################
+# FRONTEND
+############################################
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/

@@ -1,30 +1,28 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import List, Optional, Sequence, Dict, Any
+from typing import Any, Dict, List, Optional, Sequence
 
 from openai import OpenAI
-from src.config import OPENAI_MODEL_NAME
 
-client = OpenAI()
+from src.config import OPENAI_API_KEY, OPENAI_MODEL_NAME
 
+client = OpenAI(api_key=OPENAI_API_KEY) if OPENAI_API_KEY else None
 
 
 @dataclass
 class RewrittenQuery:
     original: str
-    rewritten: List[str]  # 2–3 alternatif query
+    rewritten: List[str]
 
 
-def _history_to_text(chat_history: Optional[Sequence[Dict[str, Any]]], max_turns: int = 4) -> str:
-    """
-    Streamlit'ten gelen chat_history yapısını (role, content)
-    düz bir metne çevirir. Son max_turns turu kullanıyoruz.
-    """
+def _history_to_text(
+    chat_history: Optional[Sequence[Dict[str, Any]]],
+    max_turns: int = 4,
+) -> str:
     if not chat_history:
         return ""
 
-    # Sadece son max_turns adet user+assistant mesaj çiftini alalım
     recent = chat_history[-(max_turns * 2) :]
     lines = []
     for msg in recent:
@@ -33,7 +31,7 @@ def _history_to_text(chat_history: Optional[Sequence[Dict[str, Any]]], max_turns
         if role == "user":
             lines.append(f"KULLANICI: {content}")
         elif role == "assistant":
-            lines.append(f"ASİSTAN: {content}")
+            lines.append(f"ASISTAN: {content}")
     return "\n".join(lines)
 
 
@@ -42,30 +40,27 @@ def rewrite_query(
     chat_history: Optional[Sequence[Dict[str, Any]]] = None,
     num_alternatives: int = 2,
 ) -> RewrittenQuery:
-    """
-    Kullanıcı sorusunu daha akademik, hukuki ve açık hale getirir.
-    Konuşma geçmişini kullanarak son soruyu bağlamdan bağımsız,
-    tek başına anlaşılır bir sorguya dönüştürür.
-    """
+    if not OPENAI_API_KEY or client is None:
+        return RewrittenQuery(original=question, rewritten=[])
 
     history_text = _history_to_text(chat_history)
 
     if history_text:
         prompt = f"""
-Aşağıda kullanıcı ile bir mevzuat asistanı arasındaki son konuşma geçmişi verilmiştir:
+Asagida kullanici ile bir mevzuat asistani arasindaki son konusma gecmisi verilmistir:
 
 {history_text}
 
-Şimdi kullanıcı aşağıdaki son soruyu soruyor:
+Simdi kullanici asagidaki son soruyu soruyor:
 "{question}"
 
-Görevlerin:
-1) Bu son soruyu, konuşma geçmişinden bağımsız, tek başına anlaşılır bir hukuki/akademik soru haline dönüştür.
-2) Ayrıca bu soruya yakın {num_alternatives} tane alternatif sorgu üret.
+Gorevlerin:
+1) Bu son soruyu, konusma gecmisinden bagimsiz, tek basina anlasilir bir hukuki/akademik soru haline donustur.
+2) Ayrica bu soruya yakin {num_alternatives} tane alternatif sorgu uret.
    - Biri daha genel olabilir
-   - Biri daha spesifik veya detaylı olabilir.
+   - Biri daha spesifik veya detayli olabilir.
 
-Cevabı şu formatta döndür:
+Cevabi su formatta dondur:
 REWRITTEN:
 1) ...
 2) ...
@@ -73,12 +68,12 @@ REWRITTEN:
 """
     else:
         prompt = f"""
-Kullanıcı sorusunu hukuki ve akademik bir dile dönüştür ve
-{num_alternatives} alternatif sorgu üret.
+Kullanici sorusunu hukuki ve akademik bir dile donustur ve
+{num_alternatives} alternatif sorgu uret.
 
 Soru: "{question}"
 
-Cevabı şu formatta döndür:
+Cevabi su formatta dondur:
 REWRITTEN:
 1) ...
 2) ...
@@ -90,13 +85,13 @@ REWRITTEN:
         messages=[
             {
                 "role": "system",
-                "content": "Görevin, mevzuat tabanlı bir RAG sistemine uygun net ve bağımsız arama sorguları üretmektir.",
+                "content": "Gorevin, mevzuat tabanli bir RAG sistemine uygun net ve bagimsiz arama sorgulari uretmektir.",
             },
             {"role": "user", "content": prompt},
         ],
     )
 
-    text = response.choices[0].message.content
+    text = response.choices[0].message.content or ""
 
     rewritten: List[str] = []
     for line in text.splitlines():
@@ -104,17 +99,12 @@ REWRITTEN:
         if not line:
             continue
         if line[0] in ("1", "2", "3", "-") and ")" in line:
-            # '1) ....', '2) ....' gibi satırlar
             parts = line.split(")", 1)
-            if len(parts) == 2:
-                candidate = parts[1].strip()
-            else:
-                candidate = line
+            candidate = parts[1].strip() if len(parts) == 2 else line
             if candidate:
                 rewritten.append(candidate)
 
-    if not rewritten:
-        rewritten = [question]
-
-    return RewrittenQuery(original=question, rewritten=rewritten)
-
+    return RewrittenQuery(
+        original=question,
+        rewritten=rewritten[: max(0, num_alternatives)],
+    )
